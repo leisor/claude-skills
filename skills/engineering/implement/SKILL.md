@@ -22,6 +22,12 @@ Execute the implementation of a feature or task defined in tickets or a specific
      git rev-parse HEAD
      ```
    - This baseline will be used for final code review diffing.
+4. **Ensure Workflow Phase is Unlocked**:
+   - The `/implement` command sets the workflow phase to `implement`. If the workflow guard is locked, run:
+     ```bash
+     workflow-gate set implement
+     ```
+   - Source code and test file editing are now active for TDD.
 
 ---
 

@@ -27,6 +27,12 @@ rm -f "$TARGET_DIR"
 ln -sf "$REPO_DIR" "$TARGET_DIR"
 echo "Symlink created: $TARGET_DIR -> $REPO_DIR"
 
+# Install workflow-gate CLI
+mkdir -p "$HOME/.local/bin"
+ln -sf "$REPO_DIR/scripts/workflow-gate" "$HOME/.local/bin/workflow-gate"
+chmod +x "$REPO_DIR/scripts/workflow-gate"
+echo "CLI installed: $HOME/.local/bin/workflow-gate"
+
 # Remove remote marketplace plugin if installed
 echo "Checking for remote plugin..."
 claude plugin uninstall mattpocock-skills@mattpocock 2>/dev/null || true

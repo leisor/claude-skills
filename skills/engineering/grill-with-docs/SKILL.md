@@ -35,6 +35,7 @@ Work the tree in **rounds** along the **frontier** (decisions whose prerequisite
 - **Fact-Checking First**: Look up facts yourself using `Read`, `Grep`, `Find`, or `Bash`. Never ask the user for information you can look up in the codebase.
 - **Challenge Fuzzy Language**: If the user uses a term that conflicts with `CONTEXT.md` or uses overloaded words (e.g. "account", "user", "process"), challenge it immediately: *"Your glossary defines X as ..., but here you mean Y. Should we define a new term?"*
 - **Concrete Edge-Case Scenarios**: Invent realistic boundary scenarios to test constraints and clarify assumptions.
+- **No Code Editing (Workflow Guard Enforced)**: You are strictly exploring design. You do not have write access to codebase implementation or test files. Any call to `Edit`, `Write`, or bash redirection targeting source files is intercepted and blocked by the workflow guard hook. Never state that you are exiting plan mode or jumping to code. Only updates to `CONTEXT.md` and `docs/adrs/` are allowed.
 
 ### Question Format
 

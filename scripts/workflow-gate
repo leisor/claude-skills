@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""CLI utility for managing the Claude Code workflow guard phase.
+
+Usage:
+  workflow-gate status
+  workflow-gate set <phase>
+  workflow-gate unlock
+  workflow-gate check <file_path>
+"""
+
+import os
+import sys
+from pathlib import Path
+
+# Add hooks directory to path for workflow_guard import
+SCRIPTS_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPTS_DIR.parent
+HOOKS_DIR = REPO_ROOT / "hooks"
+if str(HOOKS_DIR) not in sys.path:
+    sys.path.insert(0, str(HOOKS_DIR))
+
+from workflow_guard import (
+    ALL_PHASES,
+    GUARDED_PHASES,
+    get_project_root,
+    get_session_phase,
+    get_state_file_path,
+    is_path_allowed,
+    load_state,
+    set_session_phase,
+)
+
+
+def print_status(project_root: Path) -> None:
+    """Print current workflow guard status."""
+    state = load_state(project_root)
+    state_file = get_state_file_path(project_root)
+    phase = state.get("current_phase", "idle")
+
+    print(f"Workflow Guard Status")
+    print(f"=====================")
+    print(f"Project Root:  {project_root}")
+    print(f"State File:    {state_file}")
+    print(f"Current Phase: {phase.upper()}")
+    if phase in GUARDED_PHASES:
+        print(f"Status:        🔒 LOCKED (Code and test modifications blocked)")
+        print(f"Allowed Files: CONTEXT.md, docs/**, .claude/**, markdown docs")
+        print(f"To unlock:     Run 'workflow-gate set implement' or 'workflow-gate unlock'")
+    else:
+        print(f"Status:        🔓 UNLOCKED (All files editable)")
+
+    sessions = state.get("sessions", {})
+    if sessions:
+        print(f"\nActive Sessions ({len(sessions)}):")
+        for sid, info in sessions.items():
+            s_phase = info.get("phase", "unknown")
+            updated = info.get("updated_at", "unknown")
+            print(f"  • {sid[:8]}: {s_phase} (updated {updated})")
+
+
+def main() -> None:
+    """CLI entry point."""
+    if len(sys.argv) < 2 or sys.argv[1] in {"-h", "--help", "help"}:
+        print(__doc__.strip())
+        sys.exit(0)
+
+    command = sys.argv[1].lower()
+    project_root = get_project_root()
+
+    if command == "status":
+        print_status(project_root)
+
+    elif command == "set":
+        if len(sys.argv) < 3:
+            print(f"Error: missing phase name. Available: {sorted(ALL_PHASES)}", file=sys.stderr)
+            sys.exit(1)
+        phase = sys.argv[2].lower()
+        if phase not in ALL_PHASES:
+            print(f"Error: invalid phase '{phase}'. Choose from: {sorted(ALL_PHASES)}", file=sys.stderr)
+            sys.exit(1)
+        set_session_phase(project_root, None, phase, skill="cli")
+        print(f"Workflow phase updated to: {phase}")
+
+    elif command in {"unlock", "reset"}:
+        set_session_phase(project_root, None, "idle", skill="cli")
+        print("Workflow guard unlocked. Phase reset to 'idle'.")
+
+    elif command == "check":
+        if len(sys.argv) < 3:
+            print("Error: missing file path to check.", file=sys.stderr)
+            sys.exit(1)
+        file_path = sys.argv[2]
+        phase = get_session_phase(project_root)
+        allowed, reason = is_path_allowed(file_path, phase, project_root)
+        if allowed:
+            print(f"ALLOWED: {reason}")
+            sys.exit(0)
+        else:
+            print(f"BLOCKED: {reason}", file=sys.stderr)
+            sys.exit(2)
+
+    else:
+        print(f"Unknown command: '{command}'", file=sys.stderr)
+        print(__doc__.strip(), file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

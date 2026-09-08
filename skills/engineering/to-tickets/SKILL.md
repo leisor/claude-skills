@@ -10,6 +10,8 @@ Break a plan, spec, or conversation into a set of **tickets**: tracer-bullet ver
 
 The issue tracker and triage label vocabulary should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
 
+**Workflow Guard Notice**: You are in the ticket breakdown phase. You do not have write access to application code or tests. Write tickets to `docs/tickets/` or the issue tracker. Code implementation begins in `/implement`.
+
 ## Process
 
 ### 1. Gather context
