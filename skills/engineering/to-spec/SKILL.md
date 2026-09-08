@@ -73,3 +73,29 @@ A description of the things that are out of scope for this spec.
 Any further notes about the feature.
 
 </spec-template>
+
+---
+
+## 4. External Review Gate
+
+Before presenting the spec to the user, run an external model review to catch ambiguities, gaps, and missing edge cases. Use a **sticky review session** so fix → re-review loops keep grok/agy context (see `review-with-external`).
+
+1. **Choose a stable `review_key`**: derive from the feature slug (e.g. spec `docs/specs/YYYY-MM-DD-<feature>-spec.md` → `<feature>`). Reuse this key for every re-review of this spec.
+2. **Invoke `review-with-external`**: Load `skills/meta/review-with-external/SKILL.md`.
+3. **Execute Review**: Pass the spec path with `review_type: "spec"` and the `review_key`.
+   - Follows the tool chain in `review-with-external` (primary: Grok 4.5 High, backup: agy Opus 4.6).
+   - Round 1 cold-starts and saves a session id; later rounds **resume** that session with a delta prompt.
+4. **Address Findings**:
+   - Fix all **Critical** findings (blocking ambiguities or architectural gaps).
+   - Fix all **Important** findings (missing error cases or incomplete criteria).
+   - Note any **Minor** suggestions.
+   - Update the spec file using `Edit`.
+5. **Re-review loop**: If any Critical/Important findings were fixed, invoke `review-with-external` again with the **same** `review_key` (warm continue). Repeat until none remain (or the skill's warm-round cap forces a final cold summary). Do not start a disconnected new external chat for each pass.
+
+---
+
+## 5. Record Spec & Proceed to Tickets
+
+1. **Present the Spec**: Display the file location and a concise summary (≤15 lines) of the finalized specification.
+2. **Proceed to Tickets**: Load `skills/engineering/to-tickets/SKILL.md` and proceed to break the specification into tickets.
+

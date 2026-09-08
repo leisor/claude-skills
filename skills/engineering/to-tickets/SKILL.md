@@ -103,3 +103,28 @@ The end-to-end behaviour this ticket makes work, from the user's perspective, no
 </issue-template>
 
 In either form, avoid specific file paths or code snippets: they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts, not a working demo, just the important bits.
+
+---
+
+## 4. External Review Gate
+
+Before presenting tickets to the user, run an external model review to ensure completeness, proper dependency ordering, and vertical slicing. Use a **sticky review session** so fix → re-review loops keep grok/agy context (see `review-with-external`).
+
+1. **Choose a stable `review_key`**: derive from the feature slug (e.g. tickets `docs/tickets/YYYY-MM-DD-<feature>-tickets.md` → `<feature>-tickets`). Reuse this key for every re-review of this ticket plan.
+2. **Invoke `review-with-external`**: Load `skills/meta/review-with-external/SKILL.md`.
+3. **Execute Review**: Pass the ticket file path with `review_type: "plan"` and the `review_key`.
+   - Follows the tool chain in `review-with-external` (primary: Grok 4.5 High, backup: agy Opus 4.6).
+   - Round 1 cold-starts and saves a session id; later rounds **resume** that session with a delta prompt.
+4. **Address Findings**:
+   - Fix **Critical** findings (missing spec requirements, circular or invalid dependencies).
+   - Fix **Important** findings (horizontal slices masquerading as vertical, tickets too large, missing verification commands).
+   - Update the tickets file using `Edit`.
+5. **Re-review loop**: If any Critical/Important findings were fixed, invoke `review-with-external` again with the **same** `review_key` (warm continue). Repeat until none remain (or the skill's warm-round cap forces a final cold summary). Do not start a disconnected new external chat for each pass.
+
+---
+
+## 5. Record Tickets & Proceed to Implementation
+
+1. **Present the Tickets**: Display the ticket file location, the ordered list of tickets, and any dependency graph summary.
+2. **Proceed to Implementation**: Load `skills/engineering/implement/SKILL.md` and proceed with the first unblocked ticket.
+

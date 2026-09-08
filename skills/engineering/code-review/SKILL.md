@@ -54,6 +54,9 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 - **Message Chains**: long `a.b().c().d()` navigation the caller shouldn't depend on. → hide the walk behind one method on the first object.
 - **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
+- **Brittle Mocked Clock**: a mocked `time.time`/`perf_counter`/`monotonic` wired to a finite `side_effect` list sized exactly to the current call count (e.g. `side_effect=[0, 1, 11, 12, 13]`). Any extra clock call from elsewhere in the process exhausts the list → `StopIteration` → code silently fails. → use a closure-based fake clock that never exhausts, or a shared `FakeClock` helper.
+- **Pandas Single-Row Column Swap**: when swapping columns conditionally under a boolean mask, `df.loc[mask, ['a','b']] = df.loc[mask, ['b','a']].values` silently broadcasts the first value to every column when the mask selects a single row. → reorder via column-by-column assignment or `np.where`.
+
 
 ### 4. Spawn both sub-agents in parallel
 
